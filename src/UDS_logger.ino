@@ -2,6 +2,12 @@
 
 #define debug false
 
+//CAN-bus parameters, baud rates and CAN controller CS pin numbers
+#define CAN_E_BITRATE CAN_500KBPS
+#define CAN_E_Pin 10
+
+MCP2515 CAN_E(CAN_E_Pin);
+
 //CAN-bus request and response addresses
 #define CR6EU5_req 0x7E0 //UDS request address on CAN-E for CDI control unit
 #define CR6EU5_resp 0x7E8 //UDS response address on CAN-E for CDI control unit
@@ -30,7 +36,7 @@ struct can_frame received; //Can frame
 struct can_frame *frame_pointer; //Pointer to the frame structure
 
 unsigned long last_req = 0;
-int req_interval = 100; //UDS request interval
+int req_interval = 125; //UDS request interval
 int DID_idx = 0;
 int UDS_msg_idx = 0;
 uint16_t resp_DID = 0;
@@ -43,7 +49,7 @@ int UDS_payload_length = 0;
 void setup() {
   Serial.begin(115200);
   SPI.begin();
-  configCAN(true, can_mask, can_filter);
+  configCAN(CAN_E, CAN_E_BITRATE, true, can_mask, can_filter);
 
   //Initialize struct pointer
   frame_pointer = &received;
@@ -52,7 +58,7 @@ void setup() {
 void loop() {
   DID_idx = UDS_read_request(DID_idx);
 
-  if(readMsg(&received)){
+  if(readMsg(CAN_E, &received)){
     if(debug){
       Serial.print(received.can_id, HEX); Serial.print(":");
       for(int i = 0; i < 8; i++){
@@ -63,11 +69,17 @@ void loop() {
     switch(received.data[0] & 0xF0){ //Most significant 4 bits define the protocol control information
       case RESPONSE_FF_PCI:
         if(received.data[2] == POS_RESP_CODE){
+          //DEBUG
+          //Serial.println("FF received. ");
           resp_DID = (received.data[3] << 8) | received.data[4];
           UDS_msg_idx = 0;
           last_CF_idx = 0;
           UDS_payload_length = (((received.data[0] & 0x0F) << 8) | received.data[1]) - 3;
+          //DEBUG
+          //Serial.print("UDS PL length: "); Serial.print(UDS_payload_length);
           for(int i = 5; i < 8; i++){
+            //DEBUG
+            //Serial.print("UDS msg idx: "); Serial.print(UDS_msg_idx); Serial.print(" Data: "); Serial.println(received.data[i], HEX);
             *(UDS_payload + UDS_msg_idx) = received.data[i];
             UDS_msg_idx++;
           }
@@ -81,12 +93,21 @@ void loop() {
             Serial.print("CF ID:"); Serial.println((received.data[0] & 0x0f));
           }
           for(int i = 1; i < 8; i++){
+            //DEBUG
+            //Serial.print("CF "); Serial.print(i);
             if(debug){Serial.print("IDX: "); Serial.print(UDS_msg_idx); Serial.print(", UDS PL length: "); Serial.print(UDS_payload_length); Serial.println();}
             if(UDS_msg_idx >= (UDS_payload_length - 1)){
+              //New code
+              //Serial.print(" UDS msg idx: "); Serial.print(UDS_msg_idx); Serial.print(" Data: "); Serial.println(received.data[i], HEX);
+              *(UDS_payload + UDS_msg_idx) = received.data[i];
+              //DEBUGGING
+              //Serial.println("Message ready.");
               transmit_message(UDS_payload_length);
               break;
             }
             else{
+              //DEBUG
+              //Serial.print(" UDS msg idx: "); Serial.print(UDS_msg_idx); Serial.print(" Data: "); Serial.println(received.data[i], HEX);
               *(UDS_payload + UDS_msg_idx) = received.data[i];
               UDS_msg_idx++;
             }
@@ -103,7 +124,7 @@ int UDS_read_request(int idx){
     if(debug){
       Serial.print("Request for PID: "); Serial.println(data_id[idx], HEX);
     }
-    writeCan(CR6EU5_req, 8, REQUEST_PCI, READ_SID, ((data_id[idx] & 0xFF00) >> 8), (data_id[idx] & 0x00FF), 0, 0, 0, 0, false);
+    writeCan(CAN_E, CR6EU5_req, 8, REQUEST_PCI, READ_SID, ((data_id[idx] & 0xFF00) >> 8), (data_id[idx] & 0x00FF), 0, 0, 0, 0, false);
     last_req = millis();
     if(idx >= (list_length - 1)){
       return 0;
@@ -114,10 +135,13 @@ int UDS_read_request(int idx){
 }
 
 void write_flow_ctrl(uint8_t ST){
-  writeCan(CR6EU5_req, 8, FC_PCI, 0x08, ST, 0, 0, 0, 0, 0, false);
+  writeCan(CAN_E, CR6EU5_req, 8, FC_PCI, 0x08, ST, 0, 0, 0, 0, 0, false);
 }
 
 void transmit_message(int length){
+  if(resp_DID < 0x1000){
+    Serial.print("0");
+  }
   Serial.print(resp_DID, HEX);
   Serial.print(",");
   for(int i = 0; i < length; i++){
@@ -126,22 +150,3 @@ void transmit_message(int length){
   }
   Serial.println();
 }
-
-  /*
-  if(readMsg(&received)){
-    printFrame(received);
-    //Serial.println((received.data[5] << 8) || (received.data[6]));
-    
-    if(received.data[0] == 0x10){
-      //Serial.println("Response arrived!");
-      //writeCan(0x7E0, 8, 0x30, 0x08, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, false);
-      Serial.println(received.data[5] << 8 | received.data[6]);
-    }
-  }
-
-  if(millis() - last_transmitted > transmission_interval){
-    //writeCan(0x7E0, 8, 0x03, 0x22, 0x01, 0x68, 0x00, 0x00, 0x00, 0x00, false);
-    last_transmitted = millis();
-    //Serial.println("UDS request sent.");
-  }
-  */

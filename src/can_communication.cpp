@@ -1,39 +1,29 @@
 #include "can_communication.h"
 
-#define CAN_BITRATE CAN_500KBPS
-#define CAN_Pin 10
+//#define CAN_BITRATE CAN_500KBPS
+//#define CAN_Pin 10
 
-MCP2515 mcp2515(CAN_Pin);
+//MCP2515 mcp2515(CAN_Pin);
 
 //char filter_registers[] = {RXF0, RXF1, RXF2, RXF3, RXF4, RXF5}
 
-void configCAN(bool set_filter, uint32_t mask, uint32_t filter){
-  mcp2515.reset();
-  mcp2515.setBitrate(CAN_BITRATE);
+void configCAN(MCP2515 can_bus, CAN_SPEED bitrate, bool set_filter, uint32_t mask, uint32_t filter){
+  can_bus.reset();
+  can_bus.setBitrate(bitrate);
   //mcp2515.setConfigMode();
   //mcp2515.setLoopbackMode();
 
   if(set_filter){
-    mcp2515.setConfigMode();
-    mcp2515.setFilterMask(MCP2515::MASK0, 0, mask);
-    mcp2515.setFilterMask(MCP2515::MASK1, 0, mask);
-    mcp2515.setFilter(MCP2515::RXF(0), 0, filter);
+    can_bus.setConfigMode();
+    can_bus.setFilterMask(MCP2515::MASK0, 0, mask);
+    can_bus.setFilterMask(MCP2515::MASK1, 0, mask);
+    can_bus.setFilter(MCP2515::RXF(0), 0, filter);
   }
 
-  mcp2515.setNormalMode();
+  can_bus.setNormalMode();
 }
 
-
-void setCanFilter(uint16_t address[], int length){
-  Serial.print("Address array length: "); Serial.println(length);
-    mcp2515.setFilterMask(MCP2515::MASK0, 0, MASK); mcp2515.setFilterMask(MCP2515::MASK1, 0, MASK);
-    for(int i = 0; i < length; i++){
-      mcp2515.setFilter(MCP2515::RXF(i), 0, address[i]);
-    }
-    mcp2515.setNormalMode();
-}
-
-void writeCan(uint16_t PID, int DLC, uint8_t data0, uint8_t data1, uint8_t data2, uint8_t data3, uint8_t data4, uint8_t data5, uint8_t data6, uint8_t data7, bool printing){
+void writeCan(MCP2515 can_bus, uint16_t PID, int DLC, uint8_t data0, uint8_t data1, uint8_t data2, uint8_t data3, uint8_t data4, uint8_t data5, uint8_t data6, uint8_t data7, bool printing){
   struct can_frame frame;
   frame.can_id = PID;
   frame.can_dlc = DLC;
@@ -45,7 +35,7 @@ void writeCan(uint16_t PID, int DLC, uint8_t data0, uint8_t data1, uint8_t data2
   frame.data[5] = data5;
   frame.data[6] = data6;
   frame.data[7] = data7;
-  mcp2515.sendMessage(&frame);
+  can_bus.sendMessage(&frame);
   if(printing){
     Serial.print("ID: "); Serial.print(PID, HEX);
     Serial.print(" Data: ");
@@ -76,8 +66,8 @@ void printFrame(can_frame frame){
   Serial.println();
 }
 
-bool readMsg(struct can_frame *received){
-  if(mcp2515.readMessage(received) == MCP2515::ERROR_OK){
+bool readMsg(MCP2515 can_bus, struct can_frame *received){
+  if(can_bus.readMessage(received) == MCP2515::ERROR_OK){
     return 1;
   }
   else{return 0;}
