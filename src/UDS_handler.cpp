@@ -11,6 +11,8 @@ int last_CF_idx = 0;
 unsigned long last_req = 0;
 uint16_t resp_DID = 0;
 
+File datafile;
+
 //Static allocation for UDS payload
 uint8_t UDS_payload[100] = {0};
 int UDS_payload_length = 0;
@@ -22,13 +24,13 @@ void run_UDS_routine(MCP2515 CAN_bus, struct ECU *ecu, int req_interval, uint8_t
 
 void UDS_read(MCP2515 CAN_bus, struct ECU *ecu, uint8_t separation_time){
   if(readMsg(CAN_bus, &received)){
-    if(debug){
+    /*if(debug){
       Serial.print(received.can_id, HEX); Serial.print(":");
       for(int i = 0; i < 8; i++){
         Serial.print(received.data[i], HEX); Serial.print(":");
       }
       Serial.println();
-    }
+    }*/
     switch(received.data[0] & 0xF0){ //Most significant 4 bits define the protocol control information
       case RESPONSE_FF_PCI:
         if(received.data[2] == POS_RESP_CODE){
@@ -46,11 +48,11 @@ void UDS_read(MCP2515 CAN_bus, struct ECU *ecu, uint8_t separation_time){
         else{break;}
       case RESPONSE_CF_PCI:
         if((received.data[0] & 0x0f) == (last_CF_idx + 1)){
-          if(debug){
+          /*if(debug){
             Serial.print("CF ID:"); Serial.println((received.data[0] & 0x0f));
-          }
+          }*/
           for(int i = 1; i < 8; i++){
-            if(debug){Serial.print("IDX: "); Serial.print(UDS_msg_idx); Serial.print(", UDS PL length: "); Serial.print(UDS_payload_length); Serial.println();}
+            //if(debug){Serial.print("IDX: "); Serial.print(UDS_msg_idx); Serial.print(", UDS PL length: "); Serial.print(UDS_payload_length); Serial.println();}
             if(UDS_msg_idx >= (UDS_payload_length - 1)){
               *(UDS_payload + UDS_msg_idx) = received.data[i];
               transmit_message(UDS_payload_length);
@@ -85,14 +87,15 @@ void write_flow_ctrl(MCP2515 CAN_bus, struct ECU *ecu, uint8_t ST){
 }
 
 void transmit_message(int length){
-  if(resp_DID < 0x1000){
-    Serial.print("0");
-  }
-  Serial.print(resp_DID, HEX);
-  Serial.print(",");
-  for(int i = 0; i < length; i++){
-    if(UDS_payload[i] < 0x10){Serial.print("0");}
-    Serial.print(UDS_payload[i], HEX);
-  }
-  Serial.println();
+  datafile = SD.open("data.csv", FILE_WRITE);
+  if(datafile){
+    datafile.print(millis()); datafile.print(",");
+    datafile.print(resp_DID, HEX); datafile.print(",");
+    for(int i = 0; i < length; i++){
+    if(UDS_payload[i] < 0x10){datafile.print("0");}
+      datafile.print(UDS_payload[i], HEX);
+    }
+    datafile.println();
+    datafile.close();
+  }else{}
 }

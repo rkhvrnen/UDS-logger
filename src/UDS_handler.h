@@ -1,4 +1,5 @@
 #include "can_communication.h"
+#include <SD.h>
 
 //Protocol Control Information (PCI)
 #define REQUEST_PCI 0x03

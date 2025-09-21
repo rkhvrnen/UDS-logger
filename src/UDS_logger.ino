@@ -22,10 +22,17 @@ const uint32_t can_E_filter = CR6EU5.UDS_resp_address;
 
 const int req_interval = 125; //UDS request interval
 
+//File datafile;
+
 void setup() {
-  Serial.begin(115200);
+  //Initialize CAN bus
+  //Serial.begin(115200);
   SPI.begin();
   configCAN(CAN_E, CAN_E_BITRATE, true, can_E_mask, can_E_filter);
+
+  SD.begin(4);
+  
+  //UDS_data = SD.open("UDS_log.csv", FILE_WRITE);
 }
 
 void loop() {
