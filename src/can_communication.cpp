@@ -10,16 +10,12 @@
 void configCAN(MCP2515 can_bus, CAN_SPEED bitrate, bool set_filter, uint32_t mask, uint32_t filter){
   can_bus.reset();
   can_bus.setBitrate(bitrate);
-  //mcp2515.setConfigMode();
-  //mcp2515.setLoopbackMode();
-
   if(set_filter){
     can_bus.setConfigMode();
     can_bus.setFilterMask(MCP2515::MASK0, 0, mask);
     can_bus.setFilterMask(MCP2515::MASK1, 0, mask);
     can_bus.setFilter(MCP2515::RXF(0), 0, filter);
   }
-
   can_bus.setNormalMode();
 }
 
