@@ -17,12 +17,12 @@ File datafile;
 uint8_t UDS_payload[100] = {0};
 int UDS_payload_length = 0;
 
-void run_UDS_routine(MCP2515 CAN_bus, struct ECU *ecu, int req_interval, uint8_t separation_time, int list_length, uint16_t* id_list){
+void run_UDS_routine(MCP2515 CAN_bus, struct ECU *ecu, int req_interval, uint8_t separation_time, int list_length, uint16_t* id_list, char *filename){
   DID_idx = UDS_read_request(CAN_bus, ecu, req_interval, DID_idx, list_length, id_list);
-  UDS_read(CAN_bus, ecu, separation_time);
+  UDS_read(CAN_bus, ecu, separation_time, filename);
 }
 
-void UDS_read(MCP2515 CAN_bus, struct ECU *ecu, uint8_t separation_time){
+void UDS_read(MCP2515 CAN_bus, struct ECU *ecu, uint8_t separation_time, char *filename){
   if(readMsg(CAN_bus, &received)){
     /*if(debug){
       Serial.print(received.can_id, HEX); Serial.print(":");
@@ -55,7 +55,7 @@ void UDS_read(MCP2515 CAN_bus, struct ECU *ecu, uint8_t separation_time){
             //if(debug){Serial.print("IDX: "); Serial.print(UDS_msg_idx); Serial.print(", UDS PL length: "); Serial.print(UDS_payload_length); Serial.println();}
             if(UDS_msg_idx >= (UDS_payload_length - 1)){
               *(UDS_payload + UDS_msg_idx) = received.data[i];
-              transmit_message(UDS_payload_length);
+              transmit_message(UDS_payload_length, filename);
               break;
             }
             else{
@@ -86,9 +86,12 @@ void write_flow_ctrl(MCP2515 CAN_bus, struct ECU *ecu, uint8_t ST){
   writeCan(CAN_bus, ecu->UDS_req_address, 8, FC_PCI, 0x08, ST, 0, 0, 0, 0, 0, false);
 }
 
-void transmit_message(int length){
-  datafile = SD.open("data.csv", FILE_WRITE);
+void transmit_message(int length, char *filename){
+  //String name = (char)filename + ".csv";
+  //Serial.println(filename);
+  datafile = SD.open(filename, FILE_WRITE);
   if(datafile){
+    //Serial.println("Now saving");
     datafile.print(millis()); datafile.print(",");
     datafile.print(resp_DID, HEX); datafile.print(",");
     for(int i = 0; i < length; i++){
@@ -97,5 +100,5 @@ void transmit_message(int length){
     }
     datafile.println();
     datafile.close();
-  }else{}
+  }else{Serial.println("Not OK");}
 }

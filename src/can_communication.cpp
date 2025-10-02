@@ -7,9 +7,16 @@
 
 //char filter_registers[] = {RXF0, RXF1, RXF2, RXF3, RXF4, RXF5}
 
-void configCAN(MCP2515 can_bus, CAN_SPEED bitrate, bool set_filter, uint32_t mask, uint32_t filter){
+const uint32_t MASK = 0b11111111111;
+
+void configCAN(MCP2515 can_bus, CAN_SPEED bitrate, bool slow_oscillator, bool set_filter, uint32_t mask, uint32_t filter){
   can_bus.reset();
-  can_bus.setBitrate(bitrate);
+  if(slow_oscillator){
+    can_bus.setBitrate(bitrate, MCP_8MHZ);
+  }
+  else{
+    can_bus.setBitrate(bitrate);
+  }
   if(set_filter){
     can_bus.setConfigMode();
     can_bus.setFilterMask(MCP2515::MASK0, 0, mask);

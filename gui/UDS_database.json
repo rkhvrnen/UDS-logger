@@ -1,0 +1,76 @@
+[
+    {
+        "PID": "0x0163",
+        "Data": [
+            {
+                "Name": "Injection quantity",
+                "Unit": "mm^3/hub",
+                "DataOffset": 2,
+                "DataLength": 2,
+                "ValueFactor": 0.01,
+                "ValueOffset": 0
+            },
+            {
+                "Name": "Manifold Absolute Pressure",
+                "Unit": "hPa",
+                "DataOffset": 15,
+                "DataLength": 2,
+                "ValueFactor": 1,
+                "ValueOffset": 0
+            },
+            {
+                "Name": "Engine speed",
+                "Unit": "RPM",
+                "DataOffset": 27,
+                "DataLength": 2,
+                "ValueFactor": 0.5,
+                "ValueOffset": 0
+            },
+            {
+                "Name": "Mass Air Flow, left",
+                "Unit": "kg/h",
+                "DataOffset": 43,
+                "DataLength": 2,
+                "ValueFactor": 0.1,
+                "ValueOffset": 0
+            }
+        ]
+    },
+    {
+        "PID": "0x0165",
+        "Data": [
+            {
+                "Name": "Intake Air Temperature",
+                "Unit": "°C",
+                "DataOffset": 2,
+                "DataLength": 2,
+                "ValueFactor": 0.1,
+                "ValueOffset": -273.15
+            },
+            {
+                "Name": "Gear state",
+                "Unit": "gear",
+                "DataOffset": 8,
+                "DataLength": 1,
+                "ValueFactor": 1,
+                "ValueOffset": 0
+            },
+            {
+                "Name": "Charge air temperature",
+                "Unit": "°C",
+                "DataOffset": 15,
+                "DataLength": 2,
+                "ValueFactor": 0.1,
+                "ValueOffset": -273.15
+            },
+            {
+                "Name": "Fuel rail pressure",
+                "Unit": "bar",
+                "DataOffset": 21,
+                "DataLength": 2,
+                "ValueFactor": 0.1,
+                "ValueOffset": 0
+            }
+        ]
+    }
+]
