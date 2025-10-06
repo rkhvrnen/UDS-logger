@@ -72,5 +72,26 @@
                 "ValueOffset": 0
             }
         ]
+    },
+    {
+        "PID": "0x0168",
+        "Data": [
+            {
+                "Name": "Unknown 1",
+                "Unit": "null",
+                "DataOffset": 1,
+                "DataLength": 1,
+                "ValueFactor": 1,
+                "ValueOffset": 0
+            },
+            {
+                "Name": "Unknown 2",
+                "Unit": "null",
+                "DataOffset": 1,
+                "DataLength": 1,
+                "ValueFactor": 1,
+                "ValueOffset": 0
+            }
+        ]
     }
 ]

@@ -43,18 +43,34 @@ def _quit():
 def file_open_handler():
     print("LOG: Opening file " + selected_file.get())
     print("LOG: DT:s " +  str(csv_handler.find_DT_numbers(selected_file.get())) + " found.")
-    data_list = database_handler.get_DT_list()
+    DT_numbers = []
+    DT_numbers = csv_handler.find_DT_numbers(selected_file.get())
+    data_list = database_handler.get_DT_list(DT_numbers)
     print("LOG: Datalist: " + str(data_list))
-    draw_checkboxes(data_list)
+    draw_checkboxes(data_list) #Also, delete old checkboxes for file changing
 
 def draw_checkboxes(list):
+    checkboxes.clear()
+    datalist_vars.clear()
     for i, item in enumerate(list):
         var = tkinter.IntVar()
         datalist_vars.append(var)
         checkbox = tkinter.Checkbutton(master=checkbox_frame, text = item, variable=var, bg='white', anchor='w')
         checkboxes.append(checkbox)
         checkbox.grid(row=i, column=0, sticky='W')
-    print(checkboxes)
+    #print(datalist_vars[0].get())
+
+def draw_selected():
+    list = get_draw_list()
+    print(list)
+
+def get_draw_list():
+    draw_list = []
+    for i in range(0, len(datalist_vars)):
+        if datalist_vars[i].get() == 1:
+            draw_list.append(i)
+    #print(draw_list)
+    return draw_list
 
 textfield_filelist = tkinter.Label(master=root, text="Select file:")
 textfield_filelist.grid(row=0, column=9, rowspan=1, columnspan=1)
@@ -70,7 +86,10 @@ open_button.grid(row=2, column=9, rowspan=1, columnspan=1)
 quit_button = tkinter.Button(master=root, text="Quit", command=_quit)
 quit_button.grid(row=20, column=9, rowspan=1, columnspan=1) #pack(side=tkinter.RIGHT)
 
-checkbox_frame = tkinter.Frame(root, bg="white", width=300, height=800)
+checkbox_frame = tkinter.Frame(root, bg="white", highlightbackground="black", highlightthickness=1, width=300, height=800)
 checkbox_frame.grid(row=5, column=9, rowspan=5, columnspan=1)
+
+draw_button = tkinter.Button(master=root, text="Draw", command=draw_selected)
+draw_button.grid(row=11, column=9, rowspan=1, columnspan=1)
 
 tkinter.mainloop()
