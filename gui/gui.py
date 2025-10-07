@@ -67,6 +67,7 @@ def draw_checkboxes(list):
     #print(datalist_vars[0].get())
 
 def draw_selected(datalist):
+    init_plotting_area()
     list = get_draw_list(datalist)
     print(list)
     for idx in range(0, len(list)):
@@ -74,7 +75,7 @@ def draw_selected(datalist):
         [time, data] = csv_handler.get_data(selected_file.get(), database_handler.get_DT_value(list[idx][0]), params[0], params[1], params[2], params[3])
         print("Plotting:")
         ax.plot(time, data)
-        ax.set_ylabel(database_handler.get_unit(list[idx][0], list[idx][1]))
+        ax.set_ylabel(list[idx][2]+ " [" + database_handler.get_unit(list[idx][0], list[idx][1]) + "]")
         drawing_area.draw()
 
 
