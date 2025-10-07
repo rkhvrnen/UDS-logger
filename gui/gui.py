@@ -10,13 +10,14 @@ import database_handler
 
 datalist_vars = []
 checkboxes = []
+data_list = [] #Store list of available parameters here
 
 root = tkinter.Tk()
 root.wm_title("Data")
 
 filelist = os.listdir("data")
 
-fig = Figure(figsize=(20, 10), dpi=100)
+fig = Figure(figsize=(10, 5), dpi=100)
 ax = fig.add_subplot(1, 1, 1)
 x = np.linspace(0, 10, 100)
 y = np.sin(x)
@@ -41,6 +42,7 @@ def _quit():
     root.destroy()
 
 def file_open_handler():
+    global data_list
     print("LOG: Opening file " + selected_file.get())
     print("LOG: DT:s " +  str(csv_handler.find_DT_numbers(selected_file.get())) + " found.")
     DT_numbers = []
@@ -50,25 +52,29 @@ def file_open_handler():
     draw_checkboxes(data_list) #Also, delete old checkboxes for file changing
 
 def draw_checkboxes(list):
+    for i in checkboxes:
+        i.grid_forget()
     checkboxes.clear()
     datalist_vars.clear()
     for i, item in enumerate(list):
         var = tkinter.IntVar()
         datalist_vars.append(var)
-        checkbox = tkinter.Checkbutton(master=checkbox_frame, text = item, variable=var, bg='white', anchor='w')
+        checkbox = tkinter.Checkbutton(master=checkbox_frame, text = item[2], variable=var, bg='white', anchor='w')
         checkboxes.append(checkbox)
         checkbox.grid(row=i, column=0, sticky='W')
     #print(datalist_vars[0].get())
 
-def draw_selected():
-    list = get_draw_list()
+def draw_selected(datalist):
+    list = get_draw_list(datalist)
     print(list)
+    for idx in range(0, len(list)):
+        print(database_handler.get_drawing_parameters(list[idx][0], list[idx][1]))
 
-def get_draw_list():
+def get_draw_list(datalist):
     draw_list = []
     for i in range(0, len(datalist_vars)):
         if datalist_vars[i].get() == 1:
-            draw_list.append(i)
+            draw_list.append(datalist[i])
     #print(draw_list)
     return draw_list
 
@@ -87,9 +93,9 @@ quit_button = tkinter.Button(master=root, text="Quit", command=_quit)
 quit_button.grid(row=20, column=9, rowspan=1, columnspan=1) #pack(side=tkinter.RIGHT)
 
 checkbox_frame = tkinter.Frame(root, bg="white", highlightbackground="black", highlightthickness=1, width=300, height=800)
-checkbox_frame.grid(row=5, column=9, rowspan=5, columnspan=1)
+checkbox_frame.grid(row=5, column=9, rowspan=9, columnspan=1)
 
-draw_button = tkinter.Button(master=root, text="Draw", command=draw_selected)
-draw_button.grid(row=11, column=9, rowspan=1, columnspan=1)
+draw_button = tkinter.Button(master=root, text="Draw", command=lambda:draw_selected(data_list))
+draw_button.grid(row=18, column=9, rowspan=1, columnspan=1)
 
 tkinter.mainloop()

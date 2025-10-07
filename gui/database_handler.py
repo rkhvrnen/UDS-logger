@@ -7,5 +7,14 @@ def get_DT_list(DT_numbers):
     for i in range(0, len(database)):
         if int(database[i]['PID'], 16) in DT_numbers:
             for j in range(0, len(database[i]['Data'])):
-                list.append(database[i]['Data'][j]['Name'])
+                list.append([i, j, (database[i]['Data'][j]['Name'])])
     return list
+
+def get_drawing_parameters(i, j):
+    with open('UDS_database.json') as json_data:
+        database = json.load(json_data)
+    data_offset = database[i]['Data'][j]['DataOffset']
+    data_length = database[i]['Data'][j]['DataLength']
+    value_factor = database[i]['Data'][j]['ValueFactor']
+    value_offset = database[i]['Data'][j]['ValueOffset']
+    return [data_offset, data_length, value_factor, value_offset]
