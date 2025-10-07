@@ -18,3 +18,13 @@ def get_drawing_parameters(i, j):
     value_factor = database[i]['Data'][j]['ValueFactor']
     value_offset = database[i]['Data'][j]['ValueOffset']
     return [data_offset, data_length, value_factor, value_offset]
+
+def get_DT_value(i):
+    with open('UDS_database.json') as json_data:
+        database = json.load(json_data)
+    return int(database[i]['PID'], 16)
+
+def get_unit(i, j):
+    with open('UDS_database.json') as json_data:
+        database = json.load(json_data)
+    return database[i]['Data'][j]['Unit']

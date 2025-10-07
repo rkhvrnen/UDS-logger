@@ -17,13 +17,8 @@ root.wm_title("Data")
 
 filelist = os.listdir("data")
 
-fig = Figure(figsize=(10, 5), dpi=100)
+fig = Figure(figsize=(20, 10), dpi=100)
 ax = fig.add_subplot(1, 1, 1)
-x = np.linspace(0, 10, 100)
-y = np.sin(x)
-ax.plot(x, y)
-ax.grid()
-#fig.add_axes(ax)
 
 drawing_area = FigureCanvasTkAgg(fig, master=root)
 drawing_area.draw()
@@ -41,7 +36,14 @@ def _quit():
     root.quit()
     root.destroy()
 
+def init_plotting_area():
+    ax.clear()
+    ax.grid()
+    ax.set_xlabel("Time [s]")
+    drawing_area.draw()
+
 def file_open_handler():
+    init_plotting_area()
     global data_list
     print("LOG: Opening file " + selected_file.get())
     print("LOG: DT:s " +  str(csv_handler.find_DT_numbers(selected_file.get())) + " found.")
@@ -68,7 +70,13 @@ def draw_selected(datalist):
     list = get_draw_list(datalist)
     print(list)
     for idx in range(0, len(list)):
-        print(database_handler.get_drawing_parameters(list[idx][0], list[idx][1]))
+        params = database_handler.get_drawing_parameters(list[idx][0], list[idx][1])
+        [time, data] = csv_handler.get_data(selected_file.get(), database_handler.get_DT_value(list[idx][0]), params[0], params[1], params[2], params[3])
+        print("Plotting:")
+        ax.plot(time, data)
+        ax.set_ylabel(database_handler.get_unit(list[idx][0], list[idx][1]))
+        drawing_area.draw()
+
 
 def get_draw_list(datalist):
     draw_list = []

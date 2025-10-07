@@ -41,7 +41,7 @@
         "Data": [
             {
                 "Name": "Intake Air Temperature",
-                "Unit": "°C",
+                "Unit": "deg C",
                 "DataOffset": 2,
                 "DataLength": 2,
                 "ValueFactor": 0.1,
