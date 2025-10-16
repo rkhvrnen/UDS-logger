@@ -33,3 +33,8 @@
 
 .pyc
 __pycache__
+
+#KiCad files
+CAN_bus2-backups
+*.lck
+fp-info-cache
